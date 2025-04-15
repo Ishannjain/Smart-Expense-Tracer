@@ -1,0 +1,22 @@
+{% extends "record/layout.html" %}
+
+{% block body %}
+<h1>Your Categories</h1>
+
+    {% if categories %}
+        <ul>
+            {% for category in categories %}
+                <li>{{ category.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No categories found.</p>
+    {% endif %}
+
+    <h2>Add a New Category</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="name" placeholder="Enter category name" required>
+        <input type="submit" value="Add Category">
+    </form>
+{% endblock %}
