@@ -1,0 +1,31 @@
+{% extends "record/layout.html" %}
+
+{% block body %}
+<h1>Your Expenses</h1>
+<a href="{% url 'add_expense' %}" class="add-expense">Add New Expense</a>
+{% if expenses %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.date }}</td>
+                    <td>{{ expense.category.name }}</td>
+                    <td>Rs{{ expense.amount }}</td>
+                    <td>{{ expense.note }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No expenses recorded yet.</p>
+{% endif %}
+    
+{% endblock %}

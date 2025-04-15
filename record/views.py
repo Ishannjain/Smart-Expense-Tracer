@@ -39,8 +39,31 @@ def login_view(request):
             })
     else:
         return render(request, "record/login.html")
-
-
+    
+def display_expense(request):
+    expense=Expense.objects.filter(user=request.user).select_related('category')
+    return render(request,'record/display_expense.html',{
+        "expenses":expense
+    })
+def add_expense(request):
+    categories=Category.objects.filter(user=request.user)
+    if request.method=='POST':
+        amount = request.POST.get('amount')
+        category_id = request.POST.get('category')
+        date = request.POST.get('date')
+        note = request.POST.get('note')
+        category = Category.objects.get(id=category_id, user=request.user)
+        Expense.objects.create(
+            user=request.user,
+            amount=amount,
+            category=category,
+            date=date,
+            note=note
+        )
+        return redirect('display_expense')
+    return render(request,'record/add_expense.html',{
+        "categories":categories
+    })
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
