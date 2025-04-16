@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render,redirect, get_object_or_404
 from django.urls import reverse
-
+from django.db.models import Sum
 from .models import *
 
 
@@ -38,8 +38,10 @@ def add_income(request):
     return render(request,'record/add_income.html')
 def display_income(request):
     income=Income.objects.filter(user=request.user)
+    total_income = income.aggregate(total=Sum('amount'))['total'] or 0
     return render(request,'record/display_income.html',{
-        "incomes":income
+        "incomes":income,
+        "total_income":total_income
     })
 def login_view(request):
     if request.method == "POST":
@@ -62,8 +64,10 @@ def login_view(request):
     
 def display_expense(request):
     expense=Expense.objects.filter(user=request.user).select_related('category')
+    total_expense = expense.aggregate(total=Sum('amount'))['total'] or 0
     return render(request,'record/display_expense.html',{
-        "expenses":expense
+        "expenses":expense,
+        "total_expense":total_expense
     })
 def add_expense(request):
     categories=Category.objects.filter(user=request.user)
@@ -116,12 +120,38 @@ def edit_expense(request,expense_id):
                 "categories":categories,
                 "expense":expense
             })
-
 def delete_expense(request,expense_id):
     expense=get_object_or_404(Expense,id=expense_id,user=request.user)
     expense.delete()
     return redirect('display_expense')
+def edit_income(request,income_id):
+    income=get_object_or_404(Income,id=income_id,user=request.user)
+    if request.method=="POST":
+        amount = request.POST.get('amount')
+        date = request.POST.get('date')
+        note = request.POST.get('note')
+        if not amount or not date:
+            return render(request,'record/edit_income.html',{
+            
+                "income":income,
+                "message":'please fill all requirements'
+            })
+        
+        income.amount=amount
+        income.date=date
+        
+        income.note=note
+        income.save()
+        return redirect('display_income')
+    return render(request,'record/edit_income.html',{
+                
+                "income":income
+            })
 
+def delete_income(request,income_id):
+    income=get_object_or_404(Income,id=income_id,user=request.user)
+    income.delete()
+    return redirect('display_income')
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))

@@ -31,6 +31,12 @@
 
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"><strong>Total</strong></td>
+                <td><strong>₹{{ total_expense }}</strong></td>
+            </tr>
+        </tfoot>
     </table>
 {% else %}
     <p>No expenses recorded yet.</p>
