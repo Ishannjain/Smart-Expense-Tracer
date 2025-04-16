@@ -23,7 +23,24 @@ def categories_list(request):
     return render(request,'record/categories_list.html',{
         "categories":categories
     })
-
+def add_income(request):
+    if request.method=='POST':
+        amount = request.POST.get('amount')
+        date = request.POST.get('date')
+        note = request.POST.get('note')
+        Income.objects.create(
+            user=request.user,
+            amount=amount,
+            date=date,
+            note=note
+        )
+        return redirect('display_income')
+    return render(request,'record/add_income.html')
+def display_income(request):
+    income=Income.objects.filter(user=request.user)
+    return render(request,'record/display_income.html',{
+        "incomes":income
+    })
 def login_view(request):
     if request.method == "POST":
 
