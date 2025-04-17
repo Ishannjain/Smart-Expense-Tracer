@@ -18,3 +18,13 @@ class Income(models.Model):
     amount=models.DecimalField(max_digits=10,decimal_places=2)
     note=models.TextField(blank=True,max_length=1000)
     date=models.DateField()
+class Budget(models.Model):
+    PERIOD_CHOICES=[
+    ('montly','Monthly'),
+    ('yearly','Yearly')
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    period = models.CharField(max_length=10, choices=[('monthly', 'Monthly'), ('yearly', 'Yearly')])
+    start_date = models.DateField()

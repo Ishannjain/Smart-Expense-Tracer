@@ -1,0 +1,34 @@
+{% extends "record/layout.html" %}
+
+{% block body %}
+  <h2>Budget Overview</h2>
+  {% for data in budget_data %}
+    <h3>{{ data.budget.category.name }} - {{ data.budget.get_period_display }}</h3>
+    <p>Budgeted Amount: {{ data.budget.amount }}</p>
+    <p>Total Spent: {{ data.total_spent }}</p>
+    <p>Remaining: {{ data.remaining }}</p>
+
+    <h4>Expenses:</h4>
+    <ul>
+      {% for expense in data.expenses %}
+        <li>{{ expense.date }}: {{ expense.amount }} - {{ expense.note }}</li>
+      {% empty %}
+        <li>No expenses recorded.</li>
+      {% endfor %}
+    </ul>
+
+    <!-- Display warnings for remaining budget -->
+    {% if data.warning_level == 'exhausted' %}
+      <p style="color: red;">Warning: Budget exhausted!</p>
+    {% elif data.warning_level == 'low' %}
+      <p style="color: orange;">Warning: Budget below 25%!</p>
+    {% endif %}
+
+    <a href="{% url 'edit_budget' data.budget.id %}">Edit</a>
+    <form action="{% url 'delete_budget' data.budget.id %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit">Delete</button>
+    </form>
+    <hr>
+  {% endfor %}
+{% endblock %}

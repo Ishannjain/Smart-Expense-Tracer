@@ -1,0 +1,29 @@
+{% extends "record/layout.html" %}
+
+{% block body %}
+<h2>Create Budget</h2>
+<form method="post" action="{% url 'create_budget' %}">
+    {% csrf_token %}
+    <label for="category">Category:</label>
+    <select name="category" id="category">
+        {% for category in categories %}
+            <option value="{{ category.id }}">{{ category.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="amount">Amount:</label>
+    <input type="number" name="amount" id="amount" step="0.01" required>
+
+    <label for="period">Period:</label>
+    <select name="period" id="period">
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+    </select>
+
+    <label for="start_date">Start Date:</label>
+    <input type="date" name="start_date" id="start_date" required>
+
+    <button type="submit">Set Budget</button>
+</form>
+
+{% endblock %}

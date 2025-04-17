@@ -1,0 +1,28 @@
+{% extends "record/layout.html" %}
+
+{% block body %}
+  <h2>Edit Budget</h2>
+  {% if message %}
+    <p style="color: red;">{{ message }}</p>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <label for="category">Category:</label>
+    <select name="category" id="category">
+      {% for category in categories %}
+        <option value="{{ category.id }}" {% if category.id == budget.category.id %}selected{% endif %}>{{ category.name }}</option>
+      {% endfor %}
+    </select><br><br>
+
+    <label for="amount">Amount:</label>
+    <input type="number" name="amount" id="amount" value="{{ budget.amount }}"><br><br>
+
+    <label for="period">Period:</label>
+    <input type="text" name="period" id="period" value="{{ budget.period }}"><br><br>
+
+    <label for="start_date">Start Date:</label>
+    <input type="date" name="start_date" id="start_date" value="{{ budget.start_date }}"><br><br>
+
+    <button type="submit">Update</button>
+  </form>
+{% endblock %}
