@@ -9,8 +9,52 @@ from django.db.models import Q
 from .models import *
 from datetime import datetime
 from django.core.paginator import Paginator
+from datetime import date
+from django.utils import timezone 
+
+from datetime import timedelta
+
+
 def index(request):
-    return render(request, "record/index.html")
+    user = request.user
+    today = timezone.now().date()
+
+    # Filter income and expenses
+    all_incomes = Income.objects.filter(user=user)
+    all_expenses = Expense.objects.filter(user=user)
+
+    # Calculate overall
+    total_income = all_incomes.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = all_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    balance = total_income - total_expense
+
+    # Monthly (current month)
+    monthly_incomes = all_incomes.filter(date__month=today.month, date__year=today.year)
+    monthly_expenses = all_expenses.filter(date__month=today.month, date__year=today.year)
+    monthly_income = monthly_incomes.aggregate(Sum('amount'))['amount__sum'] or 0
+    monthly_expense = monthly_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+
+    # Yearly (current year)
+    yearly_incomes = all_incomes.filter(date__year=today.year)
+    yearly_expenses = all_expenses.filter(date__year=today.year)
+    yearly_income = yearly_incomes.aggregate(Sum('amount'))['amount__sum'] or 0
+    yearly_expense = yearly_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+
+    context = {
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "balance": balance,
+
+        "monthly_income": monthly_income,
+        "monthly_expense": monthly_expense,
+
+        "yearly_income": yearly_income,
+        "yearly_expense": yearly_expense,
+    }
+    return render(request, "record/index.html", context)
+
+
+
 
 def categories_list(request):
     if request.method=='POST':

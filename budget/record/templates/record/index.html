@@ -1,7 +1,138 @@
 {% extends "record/layout.html" %}
+{% load humanize %}
 
 {% block body %}
-    <h2>Active Listings</h2>
 
-    TODO
+<style>
+    .summary-box {
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        background-color: #f4f6f8;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .summary-title {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+
+    .summary-list {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .summary-list li {
+        padding: 5px 0;
+        font-size: 1.1rem;
+    }
+
+    .positive {
+        color: green;
+    }
+
+    .negative {
+        color: red;
+    }
+
+    .chart-container {
+        width: 100%;
+        max-width: 400px;
+        margin: auto;
+    }
+
+    canvas {
+        height: 250px !important;
+    }
+</style>
+
+<div class="container">
+    <h1 class="text-center mb-4">Smart Expense Tracker Dashboard</h1>
+
+    <div class="summary-box">
+        <div class="summary-title">💼 Overall Summary</div>
+        <ul class="summary-list">
+            <li><strong>Total Income:</strong> ₹{{ total_income|intcomma }}</li>
+            <li><strong>Total Expense:</strong> ₹{{ total_expense|intcomma }}</li>
+            <li><strong>Balance:</strong> 
+                <span class="{% if balance >= 0 %}positive{% else %}negative{% endif %}">
+                    ₹{{ balance|intcomma }}
+                </span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="summary-box">
+        <div class="summary-title">📅 Monthly Summary ({{ now|date:"F Y" }})</div>
+        <ul class="summary-list">
+            <li><strong>Monthly Income:</strong> ₹{{ monthly_income|intcomma }}</li>
+            <li><strong>Monthly Expense:</strong> ₹{{ monthly_expense|intcomma }}</li>
+        </ul>
+    </div>
+
+    <div class="summary-box">
+        <div class="summary-title">📆 Yearly Summary ({{ now|date:"Y" }})</div>
+        <ul class="summary-list">
+            <li><strong>Yearly Income:</strong> ₹{{ yearly_income|intcomma }}</li>
+            <li><strong>Yearly Expense:</strong> ₹{{ yearly_expense|intcomma }}</li>
+        </ul>
+    </div>
+
+    <div class="row text-center">
+        <div class="col-md-6 chart-container">
+            <h5 class="mb-2">📊 Income vs Expense</h5>
+            <canvas id="incomeExpenseChart"></canvas>
+        </div>
+        <div class="col-md-6 chart-container">
+            <h5 class="mb-2">📉 Budget Progress</h5>
+            <canvas id="budgetChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Income vs Expense Pie Chart
+    new Chart(document.getElementById('incomeExpenseChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Income', 'Expense'],
+            datasets: [{
+                data: [{{ total_income }}, {{ total_expense }}],
+                backgroundColor: ['#2ecc71', '#e74c3c']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Budget Progress Doughnut Chart
+    const remainingBudget = {{ monthly_budget|default:0 }} - {{ monthly_expense }};
+    new Chart(document.getElementById('budgetChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Used', 'Remaining'],
+            datasets: [{
+                data: [{{ monthly_expense }}, remainingBudget > 0 ? remainingBudget : 0],
+                backgroundColor: ['#f1c40f', '#95a5a6']
+            }]
+        },
+        options: {
+            cutout: '60%',
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+
 {% endblock %}
