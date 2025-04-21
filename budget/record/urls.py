@@ -1,6 +1,9 @@
 from django.urls import path
 
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -19,7 +22,12 @@ urlpatterns = [
     path("create_budget/",views.create_budget,name="create_budget"),
     path("display_budget/",views.display_budget,name="display_budget"),
     path('budget/<int:budget_id>/edit/', views.edit_budget, name='edit_budget'),
-    path('budget/<int:budget_id>/delete/', views.delete_budget, name='delete_budget')
+    path('budget/<int:budget_id>/delete/', views.delete_budget, name='delete_budget'),
+    path('profile/<str:username>/', views.profile, name='profile'),
+    path('add_friend/<int:user_id>/', views.add_friend, name='add_friend'),
+    path('profile_view/<int:user_id>/', views.profile_view, name='profile_view')
+    
     
     
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

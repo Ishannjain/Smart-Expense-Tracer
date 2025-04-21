@@ -5,7 +5,7 @@ from django.shortcuts import render,redirect, get_object_or_404
 from django.urls import reverse
 from django.db.models import Sum
 from decimal import Decimal
-
+from django.db.models import Q
 from .models import *
 from datetime import datetime
 def index(request):
@@ -64,10 +64,34 @@ def login_view(request):
         return render(request, "record/login.html")
     
 def display_expense(request):
-    expense=Expense.objects.filter(user=request.user).select_related('category')
-    total_expense = expense.aggregate(total=Sum('amount'))['total'] or 0
+    query = request.GET.get('q')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    tags = request.GET.get('tags', '')
+    expenses = Expense.objects.select_related('category').filter(user=request.user)
+    if query:
+        expenses = expenses.filter(
+            Q(note__icontains=query) |
+            Q(category__name__icontains=query)
+        )
+
+    if start_date and end_date:
+        try:
+            start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end = datetime.strptime(end_date, '%Y-%m-%d').date()
+            expenses = expenses.filter(date__range=(start, end))
+        except ValueError:
+            pass  # Handle invalid date formats if necessary
+
+    if tags:
+        tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+        if tag_list:
+            expenses = expenses.filter(tags__name__in=tag_list).distinct()
+
+    expenses = expenses.order_by('-date') 
+    total_expense = expenses.aggregate(total=Sum('amount'))['total'] or 0
     return render(request,'record/display_expense.html',{
-        "expenses":expense,
+        "expenses":expenses,
         "total_expense":total_expense
     })
 def add_expense(request):
@@ -216,9 +240,16 @@ def create_budget(request):
 
 
 def display_budget(request):
+    query = request.GET.get('q')
     budgets = Budget.objects.filter(user=request.user)
     budget_data = []
-
+    expenses = Expense.objects.select_related('category').filter(user=request.user)
+    if query:
+        expenses = expenses.filter(
+            Q(note__icontains=query) |
+            Q(category__name__icontains=query)
+        )
+        
     for budget in budgets:
         expenses = Expense.objects.filter(
             user=request.user,
@@ -287,3 +318,26 @@ def delete_budget(request, budget_id):
         budget.delete()
         return redirect('display_budget')
     return render(request, 'record/delete_budget.html', {'budget': budget})
+def profile(request,username):
+    user=get_object_or_404(User,username=username)
+    return render(request,'record/profile.html',{
+        "user":user
+    })
+
+def profile_view(request):
+    if request.method == 'POST' and request.FILES.get('image'):
+        image = request.FILES['image']
+        profile = request.user.profile
+        profile.image.save(image.name, image)
+        profile.save()
+        return redirect('profile', username=request.user.username)
+
+    return render(request, 'record/profile_view.html')
+
+def add_friend(request,user_id):
+     friend=User.objects.get(id=user_id)
+     Friend.objects.create(
+         current_user=request.user,
+         friend=friend
+     )
+     return redirect('profile',username=friend.username)

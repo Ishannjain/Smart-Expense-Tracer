@@ -120,7 +120,28 @@
 
 <h1>Your Expenses</h1>
 <a href="{% url 'add_expense' %}" class="add-expense">Add New Expense</a>
+<form method="get" style="margin-bottom: 20px; text-align: center;">
+    <input type="text" name="q" placeholder="Search expenses..." value="{{ request.GET.q }}" 
+           style="padding: 10px; width: 200px; border-radius: 5px; border: 1px solid #ccc;">
 
+    <input type="date" name="start_date" value="{{ request.GET.start_date }}" 
+           style="padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+    <input type="date" name="end_date" value="{{ request.GET.end_date }}" 
+           style="padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+
+    <input type="text" name="tags" placeholder="Tags (comma-separated)" value="{{ request.GET.tags }}" 
+           style="padding: 10px; width: 200px; border-radius: 5px; border: 1px solid #ccc;">
+
+    <button type="submit" style="padding: 10px 20px; background-color: #2c3e50; color: white; border: none; border-radius: 5px;">
+        Filter
+    </button>
+</form><form method="get" style="margin-bottom: 20px; text-align: center;">
+    <input type="text" name="q" placeholder="Search expenses..." value="{{ request.GET.q }}" 
+           style="padding: 10px; width: 300px; border-radius: 5px; border: 1px solid #ccc;">
+    <button type="submit" style="padding: 10px 20px; background-color: #2c3e50; color: white; border: none; border-radius: 5px;">
+        Search
+    </button>
+</form>
 {% if expenses %}
     <table>
         <thead>

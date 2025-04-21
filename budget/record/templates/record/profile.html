@@ -1,0 +1,62 @@
+{% extends "record/layout.html" %}
+
+{% block body %}
+<style>
+    .profile-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #3498db;
+        margin-bottom: 20px;
+    }
+
+    .username {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+
+    .about {
+        font-size: 1em;
+        color: #555;
+        margin-bottom: 20px;
+    }
+
+    .friend-btn {
+        background-color: #3498db;
+        color: white;
+        padding: 10px 25px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .friend-btn:hover {
+        background-color: #2980b9;
+    }
+</style>
+
+<div class="profile-container">
+    <img src="{{ user.profile.image.url }}" alt="Profile Picture" class="profile-image" />
+    <div class="username">{{ user.username }}</div>
+    <div class="about">{{ user.profile.about }}</div>
+    <form method="post" action="{% url 'add_friend' user.id %}">
+        {% csrf_token %}
+        <button type="submit" class="friend-btn">Add Friend</button>
+    </form>
+</div>
+{% endblock %}
