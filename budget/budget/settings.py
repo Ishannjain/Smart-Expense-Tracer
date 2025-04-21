@@ -43,7 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    
 ]
+# settings.py
+
+LOGIN_REDIRECT_URL = '/'  # Redirect to homepage after successful login
+LOGIN_URL = '/login/'  # URL to redirect to when login is required
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

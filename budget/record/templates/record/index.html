@@ -115,7 +115,7 @@
     });
 
     // Budget Progress Doughnut Chart
-    const remainingBudget = {{ monthly_budget|default:0 }} - {{ monthly_expense }};
+    const remainingBudget = {{ monthly_budget| default:0 }} - {{ monthly_expense }};
     new Chart(document.getElementById('budgetChart'), {
         type: 'doughnut',
         data: {

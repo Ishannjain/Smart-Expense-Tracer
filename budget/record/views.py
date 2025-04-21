@@ -15,43 +15,40 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
 def index(request):
-    user = request.user
-    today = timezone.now().date()
+    now = timezone.now()
 
-    # Filter income and expenses
-    all_incomes = Income.objects.filter(user=user)
-    all_expenses = Expense.objects.filter(user=user)
-
-    # Calculate overall
-    total_income = all_incomes.aggregate(Sum('amount'))['amount__sum'] or 0
-    total_expense = all_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    # User's income, expense, and budget queries
+    total_income = Income.objects.filter(user=request.user).aggregate(total=Sum('amount'))['total'] or 0
+    total_expense = Expense.objects.filter(user=request.user).aggregate(total=Sum('amount'))['total'] or 0
     balance = total_income - total_expense
 
-    # Monthly (current month)
-    monthly_incomes = all_incomes.filter(date__month=today.month, date__year=today.year)
-    monthly_expenses = all_expenses.filter(date__month=today.month, date__year=today.year)
-    monthly_income = monthly_incomes.aggregate(Sum('amount'))['amount__sum'] or 0
-    monthly_expense = monthly_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    # Monthly data
+    monthly_income = Income.objects.filter(user=request.user, date__month=now.month).aggregate(total=Sum('amount'))['total'] or 0
+    monthly_expense = Expense.objects.filter(user=request.user, date__month=now.month).aggregate(total=Sum('amount'))['total'] or 0
+    monthly_budget = Budget.objects.filter(user=request.user, period='monthly').first().amount if Budget.objects.filter(user=request.user, period='monthly').exists() else 0
 
-    # Yearly (current year)
-    yearly_incomes = all_incomes.filter(date__year=today.year)
-    yearly_expenses = all_expenses.filter(date__year=today.year)
-    yearly_income = yearly_incomes.aggregate(Sum('amount'))['amount__sum'] or 0
-    yearly_expense = yearly_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    # Yearly data
+    yearly_income = Income.objects.filter(user=request.user, date__year=now.year).aggregate(total=Sum('amount'))['total'] or 0
+    yearly_expense = Expense.objects.filter(user=request.user, date__year=now.year).aggregate(total=Sum('amount'))['total'] or 0
 
-    context = {
-        "total_income": total_income,
-        "total_expense": total_expense,
-        "balance": balance,
-
-        "monthly_income": monthly_income,
-        "monthly_expense": monthly_expense,
-
-        "yearly_income": yearly_income,
-        "yearly_expense": yearly_expense,
-    }
-    return render(request, "record/index.html", context)
+    # Render the dashboard
+    return render(request, 'record/index.html', {
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'balance': balance,
+        'monthly_income': monthly_income,
+        'monthly_expense': monthly_expense,
+        'monthly_budget': monthly_budget,
+        'yearly_income': yearly_income,
+        'yearly_expense': yearly_expense,
+        'now': now
+    })
 
 
 
@@ -98,7 +95,6 @@ def display_income(request):
     })
 def login_view(request):
     if request.method == "POST":
-
         # Attempt to sign user in
         username = request.POST["username"]
         password = request.POST["password"]
@@ -107,13 +103,19 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
+            next_url = request.POST.get('next', '')
+            if next_url:
+                return HttpResponseRedirect(next_url)
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "record/login.html", {
                 "message": "Invalid username and/or password."
             })
     else:
-        return render(request, "record/login.html")
+        return render(request, "record/login.html", {
+            "next": request.GET.get('next', '')
+        })
+    
     
 def display_expense(request):
     query = request.GET.get('q')
@@ -381,21 +383,17 @@ def delete_budget(request, budget_id):
         budget.delete()
         return redirect('display_budget')
     return render(request, 'record/delete_budget.html', {'budget': budget})
-def profile(request,username):
-    user=get_object_or_404(User,username=username)
-    return render(request,'record/profile.html',{
-        "user":user
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    return render(request, 'record/profile.html', {
+        'profile_user': user
     })
 
-def profile_view(request):
-    if request.method == 'POST' and request.FILES.get('image'):
-        image = request.FILES['image']
-        profile = request.user.profile
-        profile.image.save(image.name, image)
-        profile.save()
-        return redirect('profile', username=request.user.username)
-
-    return render(request, 'record/profile_view.html')
+def profile_view(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'record/profile.html', {
+        'profile_user': user
+    })
 
 def add_friend(request,user_id):
      friend=User.objects.get(id=user_id)
