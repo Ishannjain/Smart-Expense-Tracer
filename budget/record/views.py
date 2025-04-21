@@ -8,6 +8,7 @@ from decimal import Decimal
 from django.db.models import Q
 from .models import *
 from datetime import datetime
+from django.core.paginator import Paginator
 def index(request):
     return render(request, "record/index.html")
 
@@ -25,6 +26,7 @@ def categories_list(request):
         "categories":categories
     })
 def add_income(request):
+   
     if request.method=='POST':
         amount = request.POST.get('amount')
         date = request.POST.get('date')
@@ -38,11 +40,17 @@ def add_income(request):
         return redirect('display_income')
     return render(request,'record/add_income.html')
 def display_income(request):
+    income_list=Income.objects.all()
+    paginator=Paginator(income_list,10)
+    page_number=request.GET.get('page')
+    page_obj=paginator.get_page(page_number)
     income=Income.objects.filter(user=request.user)
     total_income = income.aggregate(total=Sum('amount'))['total'] or 0
+    income = income.order_by('-date') 
     return render(request,'record/display_income.html',{
         "incomes":income,
-        "total_income":total_income
+        "total_income":total_income,
+        "page_obj":page_obj
     })
 def login_view(request):
     if request.method == "POST":
@@ -68,6 +76,11 @@ def display_expense(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     tags = request.GET.get('tags', '')
+    expense_list=Expense.objects.all()
+    paginator=Paginator(expense_list,10)
+    page_number=request.GET.get('page')
+    page_obj=paginator.get_page(page_number)
+    income=Income.objects.filter(user=request.user)
     expenses = Expense.objects.select_related('category').filter(user=request.user)
     if query:
         expenses = expenses.filter(
@@ -83,16 +96,14 @@ def display_expense(request):
         except ValueError:
             pass  # Handle invalid date formats if necessary
 
-    if tags:
-        tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
-        if tag_list:
-            expenses = expenses.filter(tags__name__in=tag_list).distinct()
+    
 
     expenses = expenses.order_by('-date') 
     total_expense = expenses.aggregate(total=Sum('amount'))['total'] or 0
     return render(request,'record/display_expense.html',{
         "expenses":expenses,
-        "total_expense":total_expense
+        "total_expense":total_expense,
+        "page_obj":page_obj
     })
 def add_expense(request):
     categories=Category.objects.filter(user=request.user)
@@ -240,6 +251,11 @@ def create_budget(request):
 
 
 def display_budget(request):
+    budget_list=Budget.objects.all()
+    paginator=Paginator(budget_list,10)
+    page_number=request.GET.get('page')
+    page_obj=paginator.get_page(page_number)
+    income=Income.objects.filter(user=request.user)
     query = request.GET.get('q')
     budgets = Budget.objects.filter(user=request.user)
     budget_data = []
@@ -274,7 +290,10 @@ def display_budget(request):
             'warning_level': warning_level
         })
 
-    return render(request, 'record/display_budget.html', {'budget_data': budget_data})
+    return render(request, 'record/display_budget.html', {
+        'budget_data': budget_data,
+        "page_obj":page_obj
+        })
 def edit_budget(request, budget_id):
     budget = get_object_or_404(Budget, id=budget_id, user=request.user)
     categories = Category.objects.filter(user=request.user)

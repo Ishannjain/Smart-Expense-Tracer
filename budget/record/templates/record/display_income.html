@@ -116,6 +116,29 @@
         padding: 10px;
       }
     }
+    .pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination a {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin: 0 5px;
+}
+
+.pagination a:hover {
+    background-color: #2980b9;
+}
+
+.pagination .current {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
   </style>
 
   <h1>Your Income</h1>
@@ -154,6 +177,24 @@
         </tr>
       </tfoot>
     </table>
+    <div class="pagination">
+      <span class="step-links">
+          {% if page_obj.has_previous %}
+              <a href="?page=1">&laquo; first</a>
+              <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+          {% endif %}
+
+          <span class="current">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+          </span>
+
+          {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}">next</a>
+              <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+          {% endif %}
+      </span>
+  </div>
+
   {% else %}
     <p>No income recorded yet.</p>
   {% endif %}

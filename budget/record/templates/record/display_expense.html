@@ -2,6 +2,29 @@
 
 {% block body %}
 <style>
+    .pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination a {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin: 0 5px;
+}
+
+.pagination a:hover {
+    background-color: #2980b9;
+}
+
+.pagination .current {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
     /* General Styles */
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -129,9 +152,6 @@
     <input type="date" name="end_date" value="{{ request.GET.end_date }}" 
            style="padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
 
-    <input type="text" name="tags" placeholder="Tags (comma-separated)" value="{{ request.GET.tags }}" 
-           style="padding: 10px; width: 200px; border-radius: 5px; border: 1px solid #ccc;">
-
     <button type="submit" style="padding: 10px 20px; background-color: #2c3e50; color: white; border: none; border-radius: 5px;">
         Filter
     </button>
@@ -177,6 +197,23 @@
             </tr>
         </tfoot>
     </table>
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
 {% else %}
     <p>No expenses recorded yet.</p>
 {% endif %}
