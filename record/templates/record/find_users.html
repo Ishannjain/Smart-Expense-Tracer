@@ -1,0 +1,44 @@
+{% extends 'record/layout.html' %}
+
+{% block title %}Find Users - Budget Wise{% endblock %}
+
+{% block body %}
+<h2>Find Users</h2>
+
+<!-- Search Form -->
+<form method="get" action="{% url 'find_users' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="search">Search for Users</label>
+        <input type="text" class="form-control" id="search" name="q" value="{{ query }}" placeholder="Search for users...">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<hr>
+
+
+{% for user in results %}
+<h3>Search Results</h3>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <a href="{% url 'profile_view' user.id %}">{{ user.username }}</a>
+        {% if user != request.user %}
+            {% if user.id in connections %}
+                <!-- Unfollow Button -->
+                <form method="post" action="{% url 'toggle_follow' user_id=user.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Unfollow</button>
+                </form>
+            {% else %}
+                <!-- Follow Button -->
+                <form method="post" action="{% url 'toggle_follow' user_id=user.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">Follow</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    </li>
+{% endfor %}
+
+
+{% endblock %}

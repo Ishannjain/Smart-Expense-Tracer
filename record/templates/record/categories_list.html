@@ -1,6 +1,75 @@
 {% extends "record/layout.html" %}
 
 {% block body %}
+<style>
+    /* Overall body styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Header styling */
+h1 {
+    color: #2c3e50;
+}
+
+/* Category list styling */
+.category-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.category-item {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-size: 18px;
+}
+
+/* No categories found message */
+.no-categories {
+    font-size: 18px;
+    color: #ff6347;
+    margin: 10px 0;
+}
+
+/* Form styling */
+.category-form {
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+    margin: 20px 0;
+}
+
+.category-input {
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.submit-button {
+    padding: 10px;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.submit-button:hover {
+    background-color: #45a049;
+}
+
+</style>
 <h1>Your Categories</h1>
 
     {% if categories %}

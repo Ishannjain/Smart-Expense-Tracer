@@ -62,4 +62,4 @@ The complexity lies in the business logic handling financial summaries, budget t
 - Each user’s financial data is securely stored and separated from other users.
 - The dashboard provides monthly and yearly insights, and budget alerts notify when spending nears limits.
 - The system also supports editing and deleting of all financial records.
-
+## Requirements.txt
