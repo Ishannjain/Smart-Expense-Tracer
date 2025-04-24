@@ -22,7 +22,9 @@ urlpatterns = [
     path('budget/<int:budget_id>/delete/', views.delete_budget, name='delete_budget'),
     path('connect/find/', views.find_users, name='find_users'),
     path('connect/toggle/<int:user_id>/', views.toggle_follow, name='toggle_follow'),
-    path('profile_view/<int:user_id>/', views.profile_view, name='profile_view')
+    path('profile_view/<int:user_id>/', views.profile_view, name='profile_view'),
+    path('chat_view/<int:user_id>/', views.chat_view, name='chat_view')
+
 
 ]
 

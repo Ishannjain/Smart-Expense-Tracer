@@ -7,10 +7,13 @@
 <h3>Followers:({{ followers|length }})</h3>
 <ul>
     {% for follower in followers %}
-        <li>
+        <li class="d-flex justify-content-between align-items-center">
             <a href="{% url 'profile_view' user_id=follower.id %}">
                 {{ follower.username }} 
             </a>
+            {% if request.user != follower %}
+                <a href="{% url 'chat_view' user_id=follower.id %}" class="btn btn-outline-primary btn-sm">Message</a>
+            {% endif %}
         </li>
     {% empty %}
         <li>No followers yet.</li>
@@ -20,10 +23,13 @@
 <h3>Following:({{ following|length }})</h3>
 <ul>
     {% for followed in following %}
-        <li>
+        <li class="d-flex justify-content-between align-items-center">
             <a href="{% url 'profile_view' user_id=followed.id %}">
                 {{ followed.username }} 
             </a>
+            {% if request.user != followed %}
+                <a href="{% url 'chat_view' user_id=followed.id %}" class="btn btn-outline-primary btn-sm">Message</a>
+            {% endif %}
         </li>
     {% empty %}
         <li>Not following anyone yet.</li>
@@ -39,9 +45,7 @@
             <button type="submit" class="btn btn-primary">Follow</button>
         {% endif %}
     </form>
-    
-        
-    
 {% endif %}
+
 <H1>Find New User</H1><a class="nav-link" href="{% url 'find_users' %}">Users</a>
 {% endblock %}

@@ -448,3 +448,24 @@ def profile_view(request, user_id):
         'following': following,
         'is_following': is_following
     })
+@login_required
+def chat_view(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+
+    if other_user == request.user:
+        return redirect('profile_view', user_id=request.user.id)  # Or maybe show a message
+
+    if request.method == 'POST':
+        message = request.POST.get('message')
+        if message:
+            Chat.objects.create(sender=request.user, receiver=other_user, message=message)
+
+    messages = Chat.objects.filter(
+        models.Q(sender=request.user, receiver=other_user) |
+        models.Q(sender=other_user, receiver=request.user)
+    ).order_by('timestamp')
+
+    return render(request, 'record/chat.html', {
+        'other_user': other_user,
+        'messages': messages
+    })
