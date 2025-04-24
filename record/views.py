@@ -18,7 +18,21 @@ from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
 
-
+def check(password):
+    if len(password) < 8:
+        return False
+    isUpper = False
+    isLower = False
+    isDigit = False
+    for ch in password:
+        if ch.isupper():
+            isUpper = True
+        if ch.islower():
+            isLower = True
+        if ch.isdigit():
+            isDigit = True
+    
+    return isUpper and isLower and isDigit
 @login_required
 def index(request):
     now = timezone.now()
@@ -245,6 +259,11 @@ def register(request):
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
+        if not check(password):
+                    return render(request, "auction/register.html", {
+                        "message": "Passwords does not meet requirements. Minimun length 8 and should contain atleast one Capital Letter, one small Letter and one digit"
+                    })
+
         if password != confirmation:
             return render(request, "record/register.html", {
                 "message": "Passwords must match."

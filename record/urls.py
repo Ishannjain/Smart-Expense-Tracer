@@ -24,7 +24,5 @@ urlpatterns = [
     path('connect/toggle/<int:user_id>/', views.toggle_follow, name='toggle_follow'),
     path('profile_view/<int:user_id>/', views.profile_view, name='profile_view')
 
-
-    
 ]
 
