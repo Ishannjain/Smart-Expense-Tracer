@@ -17,6 +17,8 @@ from datetime import timedelta
 
 
 from django.contrib.auth.decorators import login_required
+import os
+from django.contrib import messages
 
 def check(password):
     if len(password) < 8:
@@ -451,15 +453,15 @@ def profile_view(request, user_id):
 @login_required
 def chat_view(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
-
+# prevent chat with yourself
     if other_user == request.user:
         return redirect('profile_view', user_id=request.user.id)  # Or maybe show a message
-
+#  handle message sending
     if request.method == 'POST':
         message = request.POST.get('message')
         if message:
             Chat.objects.create(sender=request.user, receiver=other_user, message=message)
-
+#  retrieve all old chats with timestamps
     messages = Chat.objects.filter(
         models.Q(sender=request.user, receiver=other_user) |
         models.Q(sender=other_user, receiver=request.user)
@@ -469,3 +471,47 @@ def chat_view(request, user_id):
         'other_user': other_user,
         'messages': messages
     })
+# views.py
+from django.core.files.storage import FileSystemStorage
+
+@login_required
+def edit_profile(request, user_id):
+    # Get the user whose profile we want to edit
+    profile_user = get_object_or_404(User, id=user_id)
+    
+    # Ensure only the profile owner can edit their profile
+    if request.user != profile_user:
+        return HttpResponseRedirect(reverse('profile_view', args=[user_id]))
+
+    # Try to get the Profile, if it doesn't exist, create a new one
+    profile, created = Profile.objects.get_or_create(user=profile_user)
+
+    if request.method == 'POST':
+        about = request.POST.get('about')
+        image = request.FILES.get('imagurl')
+
+        if about:
+            profile.About = about
+
+        if image:
+            # Delete old image if exists
+            if profile.imagurl:
+                try:
+                    os.remove(profile.imagurl.path)
+                except:
+                    pass
+            
+            # Save new image
+            profile.imagurl = image
+
+        try:
+            profile.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profile_view', user_id=user_id)
+        except Exception as e:
+            messages.error(request, f'Error updating profile: {str(e)}')
+
+    return render(request, 'record/edit_profile.html', {
+        'profile': profile
+    })
+

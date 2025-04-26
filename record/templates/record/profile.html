@@ -1,8 +1,61 @@
 {% extends "record/layout.html" %}
 {% block body %}
+<!-- templates/record/profile.html -->
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="profile-container" style="text-align: center; margin-top: 50px;">
+
+    <!-- Profile Image -->
+    {% if profile_user.profile.imagurl %}
+        <img src="{{ profile_user.profile.imagurl }}" alt="Profile Image"
+             style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%;">
+ 
+    {% endif %}
+
+    <!-- Username -->
+    <h2 style="margin-top: 20px;">{{ profile_user.username }}</h2>
+
+    <!-- About Section -->
+    <div style="margin-top: 20px; padding: 10px; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <h4>About Me</h4>
+        <p style="font-size: 16px; color: #555;">
+            {% if profile_user.profile.About %}
+                {{ profile_user.profile.About }}
+            {% else %}
+                No bio available yet.
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Edit Profile Button (only if user is viewing own profile) -->
+    {% if request.user == profile_user %}
+    <div style="margin-top: 20px;">
+        <a href="{% url 'edit_profile' profile_user.id %}" 
+           style="padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
+           Edit Profile
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+
+
+
 <h2>{{ profile_user.username }}'s Profile</h2>
-
-
+{% if request.user.id == user_id %}
+    <a href="{% url 'edit_profile' user_id %}" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+{% endif %}
 
 <h3>Followers:({{ followers|length }})</h3>
 <ul>

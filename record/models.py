@@ -52,3 +52,8 @@ class Chat(models.Model):
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver} at {self.timestamp}"
+class Profile(models.Model):
+    user=models.ForeignKey(User,related_name="user",on_delete=models.CASCADE)
+    imagurl=models.CharField(max_length=1000)
+    About=models.CharField(max_length=1000)
+    

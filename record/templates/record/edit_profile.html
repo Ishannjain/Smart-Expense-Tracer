@@ -1,0 +1,47 @@
+<!-- templates/record/edit_profile.html -->
+{% extends "record/layout.html" %}
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">Edit Profile</h2>
+    
+    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <div class="form-group mb-3">
+            <label for="about" class="form-label">About:</label>
+            <textarea name="about" id="about" class="form-control" rows="4" required>{{ profile.About }}</textarea>
+            <div class="invalid-feedback">
+                Please provide some information about yourself.
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="imagurl" class="form-label">Profile Image:</label>
+            <input type="file" name="imagurl" id="imagurl" class="form-control" accept="image/*">
+            <small class="form-text text-muted">Upload a new profile picture (optional)</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'profile_view' user_id=request.user.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

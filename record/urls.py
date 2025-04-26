@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -23,8 +24,6 @@ urlpatterns = [
     path('connect/find/', views.find_users, name='find_users'),
     path('connect/toggle/<int:user_id>/', views.toggle_follow, name='toggle_follow'),
     path('profile_view/<int:user_id>/', views.profile_view, name='profile_view'),
-    path('chat_view/<int:user_id>/', views.chat_view, name='chat_view')
-
-
-]
-
+    path('chat_view/<int:user_id>/', views.chat_view, name='chat_view'),
+    path('edit_profile/<int:user_id>/', views.edit_profile, name='edit_profile')
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
