@@ -1,0 +1,24 @@
+{% extends "record/layout.html" %}
+
+{% block body %}
+<h1>Create Group Expense</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <label>Description:</label><br>
+    <input type="text" name="description" required><br><br>
+
+    <label>Amount:</label><br>
+    <input type="number" step="0.01" name="amount" required><br><br>
+
+    <label>Participants:</label><br>
+    {% for user in users %}
+        <input type="checkbox" name="participants" value="{{ user.id }}"> {{ user.username }}<br>
+    {% endfor %}
+
+    <br>
+    
+      
+    <button type="submit">Create</button>
+</form>
+{% endblock %}

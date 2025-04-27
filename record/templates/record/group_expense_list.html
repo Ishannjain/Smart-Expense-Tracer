@@ -1,0 +1,34 @@
+{% extends 'record/layout.html' %}
+{% load static%}
+{% block body %}
+<h1>Group Expenses List</h1>
+<a class="nav-link" href="{% url 'create_group_expense' %}">Add New Split</a>
+{% for group_expense in group_expenses %}
+    <div>
+        <h3>{{ group_expense.description }}</h3>
+        <p><strong>Amount:</strong> ₹{{ group_expense.amount }}</p>
+        <p><strong>Paid by:</strong> {{ group_expense.paid_by.username }}</p>
+        <p><strong>Participants:</strong> 
+            {% for participant in group_expense.participants.all %}
+                {{ participant.username }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    </div>
+
+    <h4>Balance Information:</h4>
+    {% for payer, balances in balance_display.items %}
+        <div>
+            <p><strong>{{ payer.username }} owes:</strong></p>
+            <ul>
+                {% for balance in balances %}
+                    {% if balance.owed_to == payer %}
+                        <li>{{ balance.owed_to.username }} ₹{{ balance.amount }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+{% endfor %}
+
+    
+{% endblock %}

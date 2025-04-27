@@ -56,4 +56,24 @@ class Profile(models.Model):
     user=models.ForeignKey(User,related_name="user",on_delete=models.CASCADE)
     imagurl=models.CharField(max_length=1000)
     About=models.CharField(max_length=1000)
-    
+
+class GroupExpense(models.Model):
+    description = models.CharField(max_length=200)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    paid_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='paid_expenses')
+    participants = models.ManyToManyField(User, related_name='group_expenses')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.description} - {self.amount}"
+
+class Balance(models.Model):
+    owed_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owed_balances')
+    owed_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owing_balances')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    class Meta:
+        unique_together = ('owed_by', 'owed_to')
+
+    def __str__(self):
+        return f"{self.owed_by} owes {self.owed_to} {self.amount}"

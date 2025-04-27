@@ -13,7 +13,12 @@ from datetime import date
 from django.utils import timezone 
 
 from datetime import timedelta
+# splitwise
+from django.db import transaction
+from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
 
+User = get_user_model()
 
 
 from django.contrib.auth.decorators import login_required
@@ -354,7 +359,7 @@ def display_budget(request):
             'expenses': expenses,
             'total_spent': total_spent,
             'remaining': remaining,
-            'warning_level': warning_level
+            'warning_level': warning_level,
         })
 
     return render(request, 'record/display_budget.html', {
@@ -515,3 +520,61 @@ def edit_profile(request, user_id):
         'profile': profile
     })
 
+@transaction.atomic
+def create_group_expense(request):
+    if request.method == 'POST':
+        description = request.POST.get('description')
+        amount = Decimal(request.POST.get('amount'))
+        participant_ids = request.POST.getlist('participants')  # list of user ids (string)
+
+        if description and amount and participant_ids:
+            group_expense = GroupExpense.objects.create(
+                description=description,
+                amount=amount,
+                paid_by=request.user,
+            )
+
+            participants = User.objects.filter(id__in=participant_ids)
+            group_expense.participants.set(participants)
+            group_expense.save()
+
+            split_amount = group_expense.amount / participants.count()
+
+            for participant in participants:
+                if participant != group_expense.paid_by:
+                    balance, created = Balance.objects.get_or_create(
+                        owed_by=participant,
+                        owed_to=group_expense.paid_by,
+                        defaults={'amount': 0}
+                    )
+                    balance.amount += split_amount
+                    balance.save()
+
+            return redirect('group_expense_list')
+
+    # GET request
+    users = User.objects.exclude(id=request.user.id)  # You can filter who can be selected
+    return render(request, 'record/create_group_expense.html', {'users': users})
+
+
+def group_expense_list(request):
+    # Fetch all group expenses
+    group_expenses = GroupExpense.objects.all()
+    
+    # Fetch balances (how much each person owes to others)
+    balances = Balance.objects.all()
+
+    # Structure to display balances by participants
+    balance_display = {}
+    for balance in balances:
+        if balance.owed_by not in balance_display:
+            balance_display[balance.owed_by] = []
+        balance_display[balance.owed_by].append({
+            'owed_to': balance.owed_to,
+            'amount': balance.amount
+        })
+
+    return render(request, 'record/group_expense_list.html', {
+        'group_expenses': group_expenses,
+        'balance_display': balance_display,
+    })
