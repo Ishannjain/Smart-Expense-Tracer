@@ -1,0 +1,61 @@
+{% extends "record/layout.html" %}
+{% block body %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title mb-4 text-center">
+                        {% if delete %}Confirm Delete{% elif budget %}Edit Budget{% else %}Create Budget{% endif %}
+                    </h2>
+                    {% if delete %}
+                        <p>Are you sure you want to delete the budget for category "{{ budget.category.name }}"?</p>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100">Yes, delete</button>
+                        </form>
+                        <a href="{% url 'display_budget' %}" class="btn btn-outline-secondary mt-3 w-100">Back to Budgets</a>
+                    {% else %}
+                        {% if message %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                        {% endif %}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category:</label>
+                                <select name="category" id="category" class="form-control" required {% if budget %}disabled{% endif %}>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if budget and category.id == budget.category.id %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if budget %}
+                                    <input type="hidden" name="category" value="{{ budget.category.id }}">
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Amount:</label>
+                                <input type="number" step="0.01" name="amount" id="amount" class="form-control" required value="{{ budget.amount|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="period" class="form-label">Period:</label>
+                                <select name="period" id="period" class="form-control" required>
+                                    <option value="monthly" {% if budget and budget.period == 'monthly' %}selected{% endif %}>Monthly</option>
+                                    <option value="yearly" {% if budget and budget.period == 'yearly' %}selected{% endif %}>Yearly</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="start_date" class="form-label">Start Date:</label>
+                                <input type="date" name="start_date" id="start_date" class="form-control" required value="{{ budget.start_date|default:'' }}">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                {% if budget %}Update Budget{% else %}Set Budget{% endif %}
+                            </button>
+                        </form>
+                        <a href="{% url 'display_budget' %}" class="btn btn-outline-secondary mt-3 w-100">Back to Budgets</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -3,91 +3,66 @@
 
 {% block body %}
 
-<style>
-    .summary-box {
-        border: 1px solid #ddd;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        background-color: #f4f6f8;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    .summary-title {
-        font-size: 1.3rem;
-        margin-bottom: 15px;
-        color: #2c3e50;
-    }
-
-    .summary-list {
-        list-style: none;
-        padding-left: 0;
-    }
-
-    .summary-list li {
-        padding: 5px 0;
-        font-size: 1.1rem;
-    }
-
-    .positive {
-        color: green;
-    }
-
-    .negative {
-        color: red;
-    }
-
-    .chart-container {
-        width: 100%;
-        max-width: 400px;
-        margin: auto;
-    }
-
-    canvas {
-        height: 250px !important;
-    }
-</style>
-
-<div class="container">
+<div class="container py-4">
     <h1 class="text-center mb-4">Smart Expense Tracker Dashboard</h1>
 
-    <div class="summary-box">
-        <div class="summary-title">💼 Overall Summary</div>
-        <ul class="summary-list">
-            <li><strong>Total Income:</strong> ₹{{ total_income|intcomma }}</li>
-            <li><strong>Total Expense:</strong> ₹{{ total_expense|intcomma }}</li>
-            <li><strong>Balance:</strong> 
-                <span class="{% if balance >= 0 %}positive{% else %}negative{% endif %}">
-                    ₹{{ balance|intcomma }}
-                </span>
-            </li>
-        </ul>
-    </div>
-
-    <div class="summary-box">
-        <div class="summary-title">📅 Monthly Summary ({{ now|date:"F Y" }})</div>
-        <ul class="summary-list">
-            <li><strong>Monthly Income:</strong> ₹{{ monthly_income|intcomma }}</li>
-            <li><strong>Monthly Expense:</strong> ₹{{ monthly_expense|intcomma }}</li>
-        </ul>
-    </div>
-
-    <div class="summary-box">
-        <div class="summary-title">📆 Yearly Summary ({{ now|date:"Y" }})</div>
-        <ul class="summary-list">
-            <li><strong>Yearly Income:</strong> ₹{{ yearly_income|intcomma }}</li>
-            <li><strong>Yearly Expense:</strong> ₹{{ yearly_expense|intcomma }}</li>
-        </ul>
-    </div>
-
-    <div class="row text-center">
-        <div class="col-md-6 chart-container">
-            <h5 class="mb-2">📊 Income vs Expense</h5>
-            <canvas id="incomeExpenseChart"></canvas>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">💼 Overall Summary</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Total Income:</strong> ₹{{ total_income|intcomma }}</li>
+                        <li class="list-group-item"><strong>Total Expense:</strong> ₹{{ total_expense|intcomma }}</li>
+                        <li class="list-group-item"><strong>Balance:</strong> 
+                            <span class="fw-bold {% if balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                ₹{{ balance|intcomma }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 chart-container">
-            <h5 class="mb-2">📉 Budget Progress</h5>
-            <canvas id="budgetChart"></canvas>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">📅 Monthly Summary ({{ now|date:"F Y" }})</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Monthly Income:</strong> ₹{{ monthly_income|intcomma }}</li>
+                        <li class="list-group-item"><strong>Monthly Expense:</strong> ₹{{ monthly_expense|intcomma }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">📆 Yearly Summary ({{ now|date:"Y" }})</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Yearly Income:</strong> ₹{{ yearly_income|intcomma }}</li>
+                        <li class="list-group-item"><strong>Yearly Expense:</strong> ₹{{ yearly_expense|intcomma }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 text-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">📊 Income vs Expense</h5>
+                    <canvas id="incomeExpenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">📉 Budget Progress</h5>
+                    <canvas id="budgetChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </div>

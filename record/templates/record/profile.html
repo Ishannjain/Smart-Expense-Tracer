@@ -1,105 +1,84 @@
 {% extends "record/layout.html" %}
 {% block body %}
-<!-- templates/record/profile.html -->
-
-{% if messages %}
-<div class="container mt-3">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center">
+                    <!-- Profile Initial Avatar -->
+                    <div class="mb-3">
+                        <div class="rounded-circle bg-secondary d-inline-block" style="width: 140px; height: 140px; line-height: 140px; color: #fff; font-size: 3rem;">
+                            <span>{{ profile_user.username|slice:":1"|upper }}</span>
+                        </div>
+                    </div>
+                    <!-- Username -->
+                    <h2 class="fw-bold mb-1">{{ profile_user.username }}</h2>
+                    <!-- About Section -->
+                    <div class="my-4 px-3">
+                        <h5 class="text-muted mb-2">About Me</h5>
+                        <p class="fs-5 text-secondary mb-0">
+                            {% if profile_user.profile.About %}
+                                {{ profile_user.profile.About }}
+                            {% else %}
+                                <span class="text-muted">No bio available yet.</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <!-- Edit Profile Button (only if user is viewing own profile) -->
+                    {% if request.user == profile_user %}
+                        <a href="{% url 'edit_profile' profile_user.id %}" class="btn btn-outline-primary mb-3 px-4">Edit Profile</a>
+                    {% endif %}
+                    <!-- Follow/Unfollow Button -->
+                    {% if request.user != profile_user %}
+                        <form action="{% url 'toggle_follow' user_id=profile_user.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            {% if is_following %}
+                                <button type="submit" class="btn btn-danger mb-3 px-4">Unfollow</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-primary mb-3 px-4">Follow</button>
+                            {% endif %}
+                        </form>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="row">
+                        <div class="col-6 border-end">
+                            <h6 class="mb-1">Followers ({{ followers|length }})</h6>
+                            <ul class="list-unstyled mb-0" style="max-height: 120px; overflow-y: auto;">
+                                {% for follower in followers %}
+                                    <li class="d-flex justify-content-between align-items-center mb-1">
+                                        <a href="{% url 'profile_view' user_id=follower.id %}" class="text-decoration-none">{{ follower.username }}</a>
+                                        {% if request.user != follower %}
+                                            <a href="{% url 'chat_view' user_id=follower.id %}" class="btn btn-sm btn-outline-secondary">Message</a>
+                                        {% endif %}
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted">No followers yet.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="mb-1">Following ({{ following|length }})</h6>
+                            <ul class="list-unstyled mb-0" style="max-height: 120px; overflow-y: auto;">
+                                {% for followed in following %}
+                                    <li class="d-flex justify-content-between align-items-center mb-1">
+                                        <a href="{% url 'profile_view' user_id=followed.id %}" class="text-decoration-none">{{ followed.username }}</a>
+                                        {% if request.user != followed %}
+                                            <a href="{% url 'chat_view' user_id=followed.id %}" class="btn btn-sm btn-outline-secondary">Message</a>
+                                        {% endif %}
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted">Not following anyone yet.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a class="btn btn-outline-dark" href="{% url 'find_users' %}">Find New Users</a>
+            </div>
+        </div>
     </div>
- 
-    {% endfor %}
 </div>
-{% endif %}
-
-<div class="profile-container" style="text-align: center; margin-top: 50px;">
-
-    <!-- Profile Image -->
-    {% if profile_user.profile.imagurl %}
-        <img src="{{ profile_user.profile.imagurl }}" alt="Profile Image"
-             style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%;">
- 
-    {% endif %}
-
-    <!-- Username -->
-    <h2 style="margin-top: 20px;">{{ profile_user.username }}</h2>
-
-    <!-- About Section -->
-    <div style="margin-top: 20px; padding: 10px; max-width: 600px; margin-left: auto; margin-right: auto;">
-        <h4>About Me</h4>
-        <p style="font-size: 16px; color: #555;">
-            {% if profile_user.profile.About %}
-                {{ profile_user.profile.About }}
-            {% else %}
-                No bio available yet.
-            {% endif %}
-        </p>
-    </div>
-
-    <!-- Edit Profile Button (only if user is viewing own profile) -->
-    {% if request.user == profile_user %}
-    <div style="margin-top: 20px;">
-        <a href="{% url 'edit_profile' profile_user.id %}" 
-           style="padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
-           Edit Profile
-        </a>
-    </div>
-    {% endif %}
-
-</div>
-
-
-
-
-<h2>{{ profile_user.username }}'s Profile</h2>
-{% if request.user.id == user_id %}
-    <a href="{% url 'edit_profile' user_id %}" class="btn btn-outline-primary btn-sm">Edit Profile</a>
-{% endif %}
-
-<h3>Followers:({{ followers|length }})</h3>
-<ul>
-    {% for follower in followers %}
-        <li class="d-flex justify-content-between align-items-center">
-            <a href="{% url 'profile_view' user_id=follower.id %}">
-                {{ follower.username }} 
-            </a>
-            {% if request.user != follower %}
-                <a href="{% url 'chat_view' user_id=follower.id %}" class="btn btn-outline-primary btn-sm">Message</a>
-            {% endif %}
-        </li>
-    {% empty %}
-        <li>No followers yet.</li>
-    {% endfor %}
-</ul>
-
-<h3>Following:({{ following|length }})</h3>
-<ul>
-    {% for followed in following %}
-        <li class="d-flex justify-content-between align-items-center">
-            <a href="{% url 'profile_view' user_id=followed.id %}">
-                {{ followed.username }} 
-            </a>
-            {% if request.user != followed %}
-                <a href="{% url 'chat_view' user_id=followed.id %}" class="btn btn-outline-primary btn-sm">Message</a>
-            {% endif %}
-        </li>
-    {% empty %}
-        <li>Not following anyone yet.</li>
-    {% endfor %}
-</ul>
-
-{% if request.user != profile_user %}
-    <form action="{% url 'toggle_follow' user_id=profile_user.id %}" method="post">
-        {% csrf_token %}
-        {% if is_following %}
-            <button type="submit" class="btn btn-danger">Unfollow</button>
-        {% else %}
-            <button type="submit" class="btn btn-primary">Follow</button>
-        {% endif %}
-    </form>
-{% endif %}
-
-<H1>Find New User</H1><a class="nav-link" href="{% url 'find_users' %}">Users</a>
 {% endblock %}

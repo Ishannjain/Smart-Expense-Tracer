@@ -27,5 +27,7 @@ urlpatterns = [
     path('chat_view/<int:user_id>/', views.chat_view, name='chat_view'),
     path('edit_profile/<int:user_id>/', views.edit_profile, name='edit_profile'),
     path('group_expense/create/', views.create_group_expense, name='create_group_expense'),
-    path('group_expense/list/', views.group_expense_list, name='group_expense_list')
+    path('group_expense/list/', views.group_expense_list, name='group_expense_list'),
+    path('group_balance/<int:group_id>,',views.group_balance,name="group_balance")
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

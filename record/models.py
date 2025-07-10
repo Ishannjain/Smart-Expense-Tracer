@@ -53,9 +53,9 @@ class Chat(models.Model):
     def __str__(self):
         return f"From {self.sender} to {self.receiver} at {self.timestamp}"
 class Profile(models.Model):
-    user=models.ForeignKey(User,related_name="user",on_delete=models.CASCADE)
-    imagurl=models.CharField(max_length=1000)
-    About=models.CharField(max_length=1000)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    imagurl = models.CharField(max_length=1000, blank=True)
+    About = models.CharField(max_length=1000, blank=True)
 
 class GroupExpense(models.Model):
     description = models.CharField(max_length=200)

@@ -11,12 +11,12 @@ from datetime import datetime
 from django.core.paginator import Paginator
 from datetime import date
 from django.utils import timezone 
-
+from collections import defaultdict
 from datetime import timedelta
 # splitwise
 from django.db import transaction
 from django.contrib.auth import get_user_model
-from django.shortcuts import render, redirect
+
 
 User = get_user_model()
 
@@ -88,8 +88,7 @@ def categories_list(request):
         "categories":categories
     })
 def add_income(request):
-   
-    if request.method=='POST':
+    if request.method == 'POST':
         amount = request.POST.get('amount')
         date = request.POST.get('date')
         note = request.POST.get('note')
@@ -100,7 +99,7 @@ def add_income(request):
             note=note
         )
         return redirect('display_income')
-    return render(request,'record/add_income.html')
+    return render(request, 'record/income_form.html', {"income": None})
 def display_income(request):
     income_list=Income.objects.all()
     paginator=Paginator(income_list,10)
@@ -173,8 +172,8 @@ def display_expense(request):
         "page_obj":page_obj
     })
 def add_expense(request):
-    categories=Category.objects.filter(user=request.user)
-    if request.method=='POST':
+    categories = Category.objects.filter(user=request.user)
+    if request.method == 'POST':
         amount = request.POST.get('amount')
         category_id = request.POST.get('category')
         date = request.POST.get('date')
@@ -188,68 +187,58 @@ def add_expense(request):
             note=note
         )
         return redirect('display_expense')
-    return render(request,'record/add_expense.html',{
-        "categories":categories
-    })
-def edit_expense(request,expense_id):
-    expense=get_object_or_404(Expense,id=expense_id,user=request.user)
-    categories=Category.objects.filter(user=request.user)
-    if request.method=="POST":
+    return render(request, 'record/expense_form.html', {"categories": categories, "expense": None})
+
+def edit_expense(request, expense_id):
+    expense = get_object_or_404(Expense, id=expense_id, user=request.user)
+    categories = Category.objects.filter(user=request.user)
+    if request.method == "POST":
         amount = request.POST.get('amount')
         category_id = request.POST.get('category')
         date = request.POST.get('date')
         note = request.POST.get('note')
         if not amount or not category_id or not date:
-            return render(request,'record/edit_expense.html',{
-                "categories":categories,
-                "expense":expense,
-                "message":'please fill all requirements'
+            return render(request, 'record/expense_form.html', {
+                "categories": categories,
+                "expense": expense,
+                "message": 'please fill all requirements'
             })
         try:
-            category=Category.objects.get(id=category_id,user=request.user)
+            category = Category.objects.get(id=category_id, user=request.user)
         except Category.DoesNotExist:
-             return render(request,'record/edit_expense.html',{
-                "categories":categories,
-                "expense":expense,
-                "message":'invalid Category'
+            return render(request, 'record/expense_form.html', {
+                "categories": categories,
+                "expense": expense,
+                "message": 'invalid Category'
             })
-        expense.amount=amount
-        expense.date=date
-        expense.category=category
-        expense.note=note
+        expense.amount = amount
+        expense.date = date
+        expense.category = category
+        expense.note = note
         expense.save()
         return redirect('display_expense')
-    return render(request,'record/edit_expense.html',{
-                "categories":categories,
-                "expense":expense
-            })
+    return render(request, 'record/expense_form.html', {"categories": categories, "expense": expense})
 def delete_expense(request,expense_id):
     expense=get_object_or_404(Expense,id=expense_id,user=request.user)
     expense.delete()
     return redirect('display_expense')
-def edit_income(request,income_id):
-    income=get_object_or_404(Income,id=income_id,user=request.user)
-    if request.method=="POST":
+def edit_income(request, income_id):
+    income = get_object_or_404(Income, id=income_id, user=request.user)
+    if request.method == "POST":
         amount = request.POST.get('amount')
         date = request.POST.get('date')
         note = request.POST.get('note')
         if not amount or not date:
-            return render(request,'record/edit_income.html',{
-            
-                "income":income,
-                "message":'please fill all requirements'
+            return render(request, 'record/income_form.html', {
+                "income": income,
+                "message": 'please fill all requirements'
             })
-        
-        income.amount=amount
-        income.date=date
-        
-        income.note=note
+        income.amount = amount
+        income.date = date
+        income.note = note
         income.save()
         return redirect('display_income')
-    return render(request,'record/edit_income.html',{
-                
-                "income":income
-            })
+    return render(request, 'record/income_form.html', {"income": income})
 
 def delete_income(request,income_id):
     income=get_object_or_404(Income,id=income_id,user=request.user)
@@ -312,14 +301,19 @@ def create_budget(request):
             )
             return redirect('display_budget')
         except (Category.DoesNotExist, ValueError):
-            # Handle errors (e.g., invalid input)
-            pass
+            categories = Category.objects.filter(user=request.user)
+            return render(request, 'record/budget_form.html', {
+                'categories': categories,
+                'budget': None,
+                'message': 'Invalid input. Please check your data.'
+            })
 
     # For GET request, render the form
     categories = Category.objects.filter(user=request.user)
-    return render(request, 'record/create_budget.html', {
-        'categories': categories
-        })
+    return render(request, 'record/budget_form.html', {
+        'categories': categories,
+        'budget': None
+    })
 
 
 def display_budget(request):
@@ -378,7 +372,7 @@ def edit_budget(request, budget_id):
 
         # Validate inputs
         if not all([amount, period, start_date, category_id]):
-            return render(request, 'record/edit_budget.html', {
+            return render(request, 'record/budget_form.html', {
                 'budget': budget,
                 'categories': categories,
                 'message': 'All fields are required.'
@@ -393,22 +387,23 @@ def edit_budget(request, budget_id):
             budget.save()
             return redirect('display_budget')
         except (Category.DoesNotExist, ValueError):
-            return render(request, 'record/edit_budget.html', {
+            return render(request, 'record/budget_form.html', {
                 'budget': budget,
                 'categories': categories,
                 'message': 'Invalid data provided.'
             })
 
-    return render(request, 'record/edit_budget.html', {
+    return render(request, 'record/budget_form.html', {
         'budget': budget,
         'categories': categories
     })
+
 def delete_budget(request, budget_id):
     budget = get_object_or_404(Budget, id=budget_id, user=request.user)
     if request.method == 'POST':
         budget.delete()
         return redirect('display_budget')
-    return render(request, 'record/delete_budget.html', {'budget': budget})
+    return render(request, 'record/budget_form.html', {'budget': budget, 'delete': True})
 
 @login_required
 def find_users(request):
@@ -578,3 +573,36 @@ def group_expense_list(request):
         'group_expenses': group_expenses,
         'balance_display': balance_display,
     })
+
+
+
+def group_balance(request, group_id):
+    group = get_object_or_404(GroupExpense, id=group_id)
+    members = list(group.members.all())
+    expenses = Expense.objects.filter(group=group)
+
+    # Step 1: accumulate what each member owes each payer
+    owes = defaultdict(lambda: defaultdict(float))
+    for expense in expenses:
+        paid_by = expense.paid_by
+        amount = float(expense.amount)
+        share = amount / len(members)
+        for member in members:
+            if member != paid_by:
+                owes[member][paid_by] += share
+
+    # Step 2: net out mutual debts to a single direction
+    balances = defaultdict(lambda: defaultdict(float))
+    for u in members:
+        for v in members:
+            if u != v:
+                net = owes[u].get(v, 0) - owes[v].get(u, 0)
+                if net > 0:
+                    balances[u][v] = net
+
+    # Prepare final dict with usernames for the template
+    final_balances = {
+        u.username: {v.username: amt for v, amt in balances[u].items()}
+        for u in balances
+    }
+    return render(request, 'record/group_balance.html', {'balances': final_balances})

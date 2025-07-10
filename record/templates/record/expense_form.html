@@ -1,0 +1,43 @@
+{% extends "record/layout.html" %}
+{% block body %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title mb-4 text-center">
+                        {% if expense %}Edit Expense{% else %}Add New Expense{% endif %}
+                    </h2>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount:</label>
+                            <input type="number" step="0.01" name="amount" id="amount" class="form-control" required value="{{ expense.amount|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category:</label>
+                            <select name="category" id="category" class="form-control" required>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if expense and expense.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date:</label>
+                            <input type="date" name="date" id="date" class="form-control" required value="{{ expense.date|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="note" class="form-label">Note:</label>
+                            <textarea name="note" id="note" class="form-control" rows="3">{{ expense.note|default:'' }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            {% if expense %}Update Expense{% else %}Add Expense{% endif %}
+                        </button>
+                    </form>
+                    <a href="{% url 'display_expense' %}" class="btn btn-outline-secondary mt-3 w-100">Back to Expenses</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

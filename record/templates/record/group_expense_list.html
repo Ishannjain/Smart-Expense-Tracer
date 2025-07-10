@@ -15,20 +15,29 @@
         </p>
     </div>
 
-    <h4>Balance Information:</h4>
+    <!-- <h4>Balance Information:</h4>
     {% for payer, balances in balance_display.items %}
         <div>
             <p><strong>{{ payer.username }} owes:</strong></p>
             <ul>
                 {% for balance in balances %}
                     {% if balance.owed_to == payer %}
-                        <li>{{ balance.owed_to.username }} ₹{{ balance.amount }}</li>
+                        <li>{{ balance.owed_to.username }} {{ balance.amount }}</li>
                     {% endif %}
                 {% endfor %}
             </ul>
         </div>
-    {% endfor %}
+    {% endfor %} -->
 {% endfor %}
 
+</ul>
+{% for group in groups %}
+    <p>{{ group.description }} - {{ group.amount }}</p>
     
+    {% if group.id %}
+        <a href="{% url 'group_balance' group.id %}">View Balance</a>
+    {% else %}
+        <p>Group not available</p>
+    {% endif %}
+{% endfor %}
 {% endblock %}
