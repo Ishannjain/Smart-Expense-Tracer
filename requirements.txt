@@ -2,3 +2,4 @@ Django>=3.2,<5.0
 pytz
 sqlparse
 asgiref
+whitenoise

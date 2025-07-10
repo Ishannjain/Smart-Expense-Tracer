@@ -26,10 +26,12 @@ SECRET_KEY = 'django-insecure-_8okz4%h)9yu&@=1175jvc+)u@cddess!uq^eczt5b0*1dg&e0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+ALLOWED_HOSTS = ['gunicorn SmartExpenseTracer.wsgi:application''.onrender.com']
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Application definition
 AUTH_USER_MODEL = 'record.User'
@@ -49,8 +51,9 @@ INSTALLED_APPS = [
 
 LOGIN_REDIRECT_URL = '/'  # Redirect to homepage after successful login
 LOGIN_URL = '/login/'  # URL to redirect to when login is required
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
