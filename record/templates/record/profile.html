@@ -1,22 +1,40 @@
 {% extends "record/layout.html" %}
+{% block title %}{{ user }}{% endblock %}
+
 {% block body %}
+<style>
+    .about-section h5 {
+    font-size: 1.1rem;
+    color: #1e3a8a;
+}
+
+.about-text {
+    font-size: 1rem;
+    color: #475569;
+    line-height: 1.6;
+}
+
+</style>
 <div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
+    <div class="row">
+        <!-- Left Side: Profile Info -->
+        <div class="col-lg-6 mb-4">
             <div class="card shadow-lg border-0">
                 <div class="card-body text-center">
                     <!-- Profile Initial Avatar -->
-                    <div class="mb-3">
-                        <div class="rounded-circle bg-secondary d-inline-block" style="width: 140px; height: 140px; line-height: 140px; color: #fff; font-size: 3rem;">
+                  
+  <div class="mb-3">
+                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center" style="width: 140px; height: 140px; color: #fff; font-size: 3rem;">
                             <span>{{ profile_user.username|slice:":1"|upper }}</span>
                         </div>
                     </div>
                     <!-- Username -->
                     <h2 class="fw-bold mb-1">{{ profile_user.username }}</h2>
+
                     <!-- About Section -->
-                    <div class="my-4 px-3">
-                        <h5 class="text-muted mb-2">About Me</h5>
-                        <p class="fs-5 text-secondary mb-0">
+                    <div class="about-section text-start mt-4 px-3">
+                        <h5 class="text-primary fw-semibold border-bottom pb-2 mb-3">About Me</h5>
+                        <p class="about-text mb-0">
                             {% if profile_user.profile.About %}
                                 {{ profile_user.profile.About }}
                             {% else %}
@@ -24,61 +42,77 @@
                             {% endif %}
                         </p>
                     </div>
-                    <!-- Edit Profile Button (only if user is viewing own profile) -->
+
+                    <!-- Edit Profile Button -->
                     {% if request.user == profile_user %}
-                        <a href="{% url 'edit_profile' profile_user.id %}" class="btn btn-outline-primary mb-3 px-4">Edit Profile</a>
+                        <a href="{% url 'edit_profile' profile_user.id %}" class="btn btn-outline-primary mt-4 px-4">Edit Profile</a>
                     {% endif %}
-                    <!-- Follow/Unfollow Button -->
+
+                    <!-- Follow/Unfollow -->
                     {% if request.user != profile_user %}
-                        <form action="{% url 'toggle_follow' user_id=profile_user.id %}" method="post" class="d-inline">
+                        <form action="{% url 'toggle_follow' user_id=profile_user.id %}" method="post" class="d-inline mt-4">
                             {% csrf_token %}
                             {% if is_following %}
-                                <button type="submit" class="btn btn-danger mb-3 px-4">Unfollow</button>
+                                <button type="submit" class="btn btn-danger px-4">Unfollow</button>
                             {% else %}
-                                <button type="submit" class="btn btn-primary mb-3 px-4">Follow</button>
+                                <button type="submit" class="btn btn-primary px-4">Follow</button>
                             {% endif %}
                         </form>
                     {% endif %}
                 </div>
-                <div class="card-footer bg-white">
-                    <div class="row">
-                        <div class="col-6 border-end">
-                            <h6 class="mb-1">Followers ({{ followers|length }})</h6>
-                            <ul class="list-unstyled mb-0" style="max-height: 120px; overflow-y: auto;">
-                                {% for follower in followers %}
-                                    <li class="d-flex justify-content-between align-items-center mb-1">
-                                        <a href="{% url 'profile_view' user_id=follower.id %}" class="text-decoration-none">{{ follower.username }}</a>
-                                        {% if request.user != follower %}
-                                            <a href="{% url 'chat_view' user_id=follower.id %}" class="btn btn-sm btn-outline-secondary">Message</a>
-                                        {% endif %}
-                                    </li>
-                                {% empty %}
-                                    <li class="text-muted">No followers yet.</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="mb-1">Following ({{ following|length }})</h6>
-                            <ul class="list-unstyled mb-0" style="max-height: 120px; overflow-y: auto;">
-                                {% for followed in following %}
-                                    <li class="d-flex justify-content-between align-items-center mb-1">
-                                        <a href="{% url 'profile_view' user_id=followed.id %}" class="text-decoration-none">{{ followed.username }}</a>
-                                        {% if request.user != followed %}
-                                            <a href="{% url 'chat_view' user_id=followed.id %}" class="btn btn-sm btn-outline-secondary">Message</a>
-                                        {% endif %}
-                                    </li>
-                                {% empty %}
-                                    <li class="text-muted">Not following anyone yet.</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
+            </div>
+
+            <!-- Find New Users Button -->
+            
+        </div>
+
+        <!-- Right Side: Followers / Following -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-semibold mb-3">Followers ({{ followers|length }})</h5>
+                    <ul class="list-unstyled" style="max-height: 180px; overflow-y: auto;">
+                        {% for follower in followers %}
+                            <li class="d-flex justify-content-between align-items-center mb-2">
+                                <a href="{% url 'profile_view' user_id=follower.id %}" class="text-decoration-none text-dark">
+                                    {{ follower.username }}
+                                </a>
+                                {% if request.user != follower %}
+                                    <a href="{% url 'chat_view' user_id=follower.id %}" class="btn btn-sm btn-outline-secondary">Message</a>
+                                {% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="text-muted">No followers yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-semibold mb-3">Following ({{ following|length }})</h5>
+                    <ul class="list-unstyled" style="max-height: 180px; overflow-y: auto;">
+                        {% for followed in following %}
+                            <li class="d-flex justify-content-between align-items-center mb-2">
+                                <a href="{% url 'profile_view' user_id=followed.id %}" class="text-decoration-none text-dark">
+                                    {{ followed.username }}
+                                </a>
+                                {% if request.user != followed %}
+                                    <a href="{% url 'chat_view' user_id=followed.id %}" class="btn btn-sm btn-outline-secondary">Message</a>
+                                {% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="text-muted">Not following anyone yet.</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
             <div class="text-center mt-4">
                 <a class="btn btn-outline-dark" href="{% url 'find_users' %}">Find New Users</a>
             </div>
         </div>
+        
     </div>
+    
 </div>
 {% endblock %}

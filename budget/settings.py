@@ -31,6 +31,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 ALLOWED_HOSTS = ['gunicorn SmartExpenseTracer.wsgi:application''.onrender.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Application definition

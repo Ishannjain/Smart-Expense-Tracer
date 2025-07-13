@@ -1,91 +1,111 @@
 {% extends "record/layout.html" %}
-
+{% block title %}Category{% endblock %}
 {% block body %}
+
 <style>
-    /* Overall body styling */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-}
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8fafc;
+        color: #1e293b;
+        margin: 0;
+    }
 
-/* Header styling */
-h1 {
-    color: #2c3e50;
-}
+    h1, h2 {
+        color: #1e40af;
+        margin-bottom: 1rem;
+    }
 
-/* Category list styling */
-.category-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 20px 0;
-}
+    /* Container */
+    .category-container {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        max-width: 600px;
+        margin: 0 auto;
+    }
 
-.category-item {
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 5px;
-    font-size: 18px;
-}
+    /* Category list styling */
+    .category-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem 0;
+    }
 
-/* No categories found message */
-.no-categories {
-    font-size: 18px;
-    color: #ff6347;
-    margin: 10px 0;
-}
+    .category-item {
+        background-color: #e0ecff;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 500;
+        color: #1e3a8a;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
 
-/* Form styling */
-.category-form {
-    display: flex;
-    flex-direction: column;
-    max-width: 300px;
-    margin: 20px 0;
-}
+    .no-categories {
+        font-size: 16px;
+        color: #ef4444;
+        margin-bottom: 1rem;
+    }
 
-.category-input {
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-}
+    /* Form styling */
+    .category-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
 
-.submit-button {
-    padding: 10px;
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-}
+    .category-input {
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.2s ease-in-out;
+    }
 
-.submit-button:hover {
-    background-color: #45a049;
-}
+    .category-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
 
+    .submit-button {
+        padding: 12px;
+        background-color: #3b82f6;
+        border: none;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+    }
+
+    .submit-button:hover {
+        background-color: #2563eb;
+    }
 </style>
-<h1>Your Categories</h1>
+
+<div class="category-container">
+    <h1>Your Categories</h1>
 
     {% if categories %}
-        <ul>
+        <ul class="category-list">
             {% for category in categories %}
-                <li>{{ category.name }}</li>
+                <li class="category-item">{{ category.name }}</li>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No categories found.</p>
+        <p class="no-categories">No categories found.</p>
     {% endif %}
 
     <h2>Add a New Category</h2>
-    <form method="post">
+    <form method="post" class="category-form">
         {% csrf_token %}
-        <input type="text" name="name" placeholder="Enter category name" required>
-        <input type="submit" value="Add Category">
+        <input type="text" name="name" class="category-input" placeholder="Enter category name" required>
+        <input type="submit" class="submit-button" value="Add Category">
     </form>
+</div>
+
 {% endblock %}

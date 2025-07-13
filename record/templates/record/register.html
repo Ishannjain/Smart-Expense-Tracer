@@ -2,66 +2,57 @@
 {% load static %}
 {% block body %}
 
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow-sm" style="min-width: 320px; max-width: 400px; width: 100%;">
+        <h3 class="mb-3 text-center">Create Account</h3>
 
-<div class="register-container">
-    <!-- Left: Register Form -->
-    <div class="register-form">
-        <div class="card">
-            <h2 class="mb-4 text-center">Create an Account</h2>
+        {% if message %}
+            <div class="alert alert-danger text-center">{{ message }}</div>
+        {% endif %}
 
-            {% if message %}
-                <div class="alert alert-danger text-center">{{ message }}</div>
-            {% endif %}
+        <form action="{% url 'register' %}" method="post" autocomplete="off">
+            {% csrf_token %}
 
-            <form action="{% url 'register' %}" method="post">
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" placeholder="e.g., johndoe" value="{{ username|default:'' }}" required autofocus>
-                </div>
-
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" value="{{ email|default:'' }}" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter a strong password" required>
-                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password')">^</button>
-                    </div>
-                    <div class="form-text">At least 8 characters recommended.</div>
-                </div>
-                <div class="mb-4">
-                    <label for="confirmation" class="form-label">Confirm Password</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control" id="confirmation" name="confirmation" placeholder="Re-enter your password" required>
-                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmation')">^</button>
-                    </div>
-                </div>
-
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg">Register</button>
-                </div>
-            </form>
-            <div class="mt-4 text-center">
-                Already have an account? <a href="{% url 'login' %}">Log in here</a>.
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" value="{{ username|default:'' }}" required autofocus>
             </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" value="{{ email|default:'' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required autocomplete="new-password">
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password')" aria-label="Toggle password visibility">👁️</button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmation" class="form-label">Confirm Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="confirmation" name="confirmation" placeholder="Confirm password" required autocomplete="new-password">
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmation')" aria-label="Toggle password visibility">👁️</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Register</button>
+        </form>
+
+        <div class="mt-3 text-center small">
+            Already have an account? <a href="{% url 'login' %}">Log in here</a>.
         </div>
     </div>
-
-    
+</div>
 
 <script>
     function togglePassword(id) {
         const field = document.getElementById(id);
-        if (field.type === "password") {
-            field.type = "text";
-        } else {
-            field.type = "password";
-        }
+        field.type = (field.type === "password") ? "text" : "password";
     }
 </script>
+
 {% endblock %}

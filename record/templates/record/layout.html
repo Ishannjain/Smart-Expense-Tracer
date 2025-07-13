@@ -1,65 +1,182 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>{% block title %}Budget Wise{% endblock %}</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <link href="{% static 'record/styles.css' %}" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<head>
+    <title>{% block title %}Budget Wise{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+          <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
-    </head>
+    <link href="{% static 'record/styles.css' %}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+header {
+    background-color: #dbeafe;
+   
+    padding: 1.5rem;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e40af;
+    box-shadow: 0 2px 6px rgba(30, 64, 175, 0.1);
+    text-align: center;
+}
+
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            
+        }
+
+        .sidebar {
+    background-color: #e6f0ff; /* update this based on theme */
+    padding: 1rem;
+    min-height: 100vh;
+    width: 220px;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar .nav-link {
+    display: block;
+    background-color: white;
+    border: none;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    color: #1e3a8a;
+    font-weight: 500;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.sidebar .nav-link:hover {
+    background-color:#5b77d2;
+    transform: translateY(-2px);
+}
+
+
+       html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden; /* ✅ Prevent horizontal scrolling */
+}
+
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden; /* optional: contain content vertically */
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
     
-    <body>
-        <h1>Budget Wise</h1>
-        <div>
-            {% if user.is_authenticated %}
-                Signed in as <strong>{{ user.username }}</strong>.
-            {% else %}
-                Not signed in.
-            {% endif %}
+  background: linear-gradient(135deg, #b4b8ff 0%, #8ca6ff 100%);
+}
+
+.sidebar {
+    background-color: #e6f0ff;
+    padding: 1rem;
+    width: 220px;
+    flex-shrink: 0; /* ✅ Prevent sidebar from shrinking */
+    height: 100%;
+    overflow-y: auto;
+}
+
+.content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    overflow-x: hidden; /* ✅ Prevent content from stretching horizontally */
+}
+
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header>
+            <h1 class="mb-0">Budget Wise</h1>
+        </header>
+
+        <div class="main-content">
+            <nav class="sidebar">
+                {% if user.is_authenticated %}
+                
+                    <p>Username: <strong>{{ user.username }}</strong>.</p>
+                   <ul class="nav flex-column">
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'index' %}">
+            <i class="fas fa-tachometer-alt"></i> DashBoard
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'profile_view' request.user.id %}">
+            <i class="fas fa-user"></i> Profile
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'categories_list' %}">
+            <i class="fas fa-list-alt"></i> Categories
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'display_income' %}">
+            <i class="fas fa-arrow-circle-down"></i> Income
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'display_expense' %}">
+            <i class="fas fa-arrow-circle-up"></i> Expense
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'display_budget' %}">
+            <i class="fas fa-wallet"></i> Budget
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'logout' %}">
+            <i class="fas fa-sign-out-alt"></i> Log Out
+        </a>
+    </li>
+</ul>
+
+                {% else %}
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        </li>
+                    </ul>
+                {% endif %}
+            </nav>
+
+            <main class="content">
+                {% block body %}
+                {% endblock %}
+            </main>
         </div>
-        <ul class="nav">
-            
-            {% if user.is_authenticated %}
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'index' %}">Budget Recorder</a>
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'profile_view' request.user.id %}">Profile</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'display_expense' %}">Expense</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'categories_list' %}">Categories</a>
-            </li>
-           
-            
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'display_budget' %}">Budget</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'display_income'%}">Income</a>
-            </li>
-            <li class="nav-item">
-                <!-- <a class="nav-link" href="{% url 'group_expense_list' %}">Splitwise</a> -->
-            </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                </li>
-            {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Log In</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}">Register</a>
-                </li>
-            {% endif %}
-        </ul>
-        <hr>
-        {% block body %}
-        {% endblock %}
-    </body>
+    </div>
+</body>
 </html>
