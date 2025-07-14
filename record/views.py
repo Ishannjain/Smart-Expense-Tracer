@@ -515,94 +515,117 @@ def edit_profile(request, user_id):
         'profile': profile
     })
 
-@transaction.atomic
-def create_group_expense(request):
+#Splitwise
+@login_required
+def split_rooms(request):
+    rooms = SplitRoom.objects.filter(created_by=request.user) | SplitRoom.objects.filter(roommembership__user=request.user)
+    join_error = None
     if request.method == 'POST':
-        description = request.POST.get('description')
-        amount = Decimal(request.POST.get('amount'))
-        participant_ids = request.POST.getlist('participants')  # list of user ids (string)
+        join_code = request.POST.get('join_code')
+        try:
+            room = SplitRoom.objects.get(code=join_code.upper())
+            # Check if already a member
+            if RoomMembership.objects.filter(room=room, user=request.user).exists():
+                join_error = 'You are already a member of this room.'
+            else:
+                RoomMembership.objects.create(room=room, user=request.user)
+                return redirect('room_detail', room_id=room.code)
+        except SplitRoom.DoesNotExist:
+            join_error = 'No room found with that code.'
+    return render(request, 'record/rooms.html', {'rooms': rooms, 'join_error': join_error})
 
-        if description and amount and participant_ids:
-            group_expense = GroupExpense.objects.create(
-                description=description,
-                amount=amount,
-                paid_by=request.user,
-            )
+@login_required
+def create_room(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        room = SplitRoom.objects.create(name=name, created_by=request.user)
+        RoomMembership.objects.create(room=room, user=request.user)
+        return redirect('split_rooms')
+    return render(request, 'record/create_room.html')
 
-            participants = User.objects.filter(id__in=participant_ids)
-            group_expense.participants.set(participants)
-            group_expense.save()
+@login_required
+def room_detail(request, room_id):
+    room = get_object_or_404(SplitRoom, code=room_id)
+    members = list(RoomMembership.objects.filter(room=room).values_list('user', flat=True))
+    expenses = GroupExpense.objects.filter(room=room)
 
-            split_amount = group_expense.amount / participants.count()
+    # Clear all debts for this room
+    GroupDebt.objects.filter(room=room).delete()
 
-            for participant in participants:
-                if participant != group_expense.paid_by:
-                    balance, created = Balance.objects.get_or_create(
-                        owed_by=participant,
-                        owed_to=group_expense.paid_by,
-                        defaults={'amount': 0}
-                    )
-                    balance.amount += split_amount
-                    balance.save()
-
-            return redirect('group_expense_list')
-
-    # GET request
-    users = User.objects.exclude(id=request.user.id)  # You can filter who can be selected
-    return render(request, 'record/create_group_expense.html', {'users': users})
-
-
-def group_expense_list(request):
-    # Fetch all group expenses
-    group_expenses = GroupExpense.objects.all()
-    
-    # Fetch balances (how much each person owes to others)
-    balances = Balance.objects.all()
-
-    # Structure to display balances by participants
-    balance_display = {}
-    for balance in balances:
-        if balance.owed_by not in balance_display:
-            balance_display[balance.owed_by] = []
-        balance_display[balance.owed_by].append({
-            'owed_to': balance.owed_to,
-            'amount': balance.amount
-        })
-
-    return render(request, 'record/group_expense_list.html', {
-        'group_expenses': group_expenses,
-        'balance_display': balance_display,
-    })
-
-
-
-def group_balance(request, group_id):
-    group = get_object_or_404(GroupExpense, id=group_id)
-    members = list(group.members.all())
-    expenses = Expense.objects.filter(group=group)
-
-    # Step 1: accumulate what each member owes each payer
-    owes = defaultdict(lambda: defaultdict(float))
-    for expense in expenses:
-        paid_by = expense.paid_by
-        amount = float(expense.amount)
-        share = amount / len(members)
-        for member in members:
-            if member != paid_by:
-                owes[member][paid_by] += share
-
-    # Step 2: net out mutual debts to a single direction
+    # Calculate debts: for each expense, split among all members
+    from collections import defaultdict
     balances = defaultdict(lambda: defaultdict(float))
+    for expense in expenses:
+        share = float(expense.amount) / len(members) if members else 0
+        for user_id in members:
+            if user_id != expense.paid_by_id:
+                balances[user_id][expense.paid_by_id] += share
+
+    # Net out debts
     for u in members:
         for v in members:
             if u != v:
-                net = owes[u].get(v, 0) - owes[v].get(u, 0)
+                net = balances[u][v] - balances[v][u]
                 if net > 0:
-                    balances[u][v] = net
+                    GroupDebt.objects.create(room=room, from_user_id=u, to_user_id=v, amount=net)
 
-    # Prepare final dict with usernames for the template
-    final_balances = {
-        u.username: {v.username: amt for v, amt in balances[u].items()}
-        for u in balances
-    }
-    return render(request, 'record/group_balance.html', {'balances': final_balances})
+    members_qs = RoomMembership.objects.filter(room=room)
+    debts = GroupDebt.objects.filter(room=room)
+    expenses = GroupExpense.objects.filter(room=room)
+    return render(request, 'record/room_detail.html', {
+        'room': room,
+        'members': members_qs,
+        'expenses': expenses,
+        'debts': debts,
+    })
+
+@login_required
+def add_member(request, room_id):
+    room = get_object_or_404(SplitRoom, code=room_id)
+    error = None
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        try:
+            user = User.objects.get(username=username)
+            if RoomMembership.objects.filter(user=user, room=room).exists():
+                error = 'User is already a member.'
+            else:
+                RoomMembership.objects.create(user=user, room=room)
+                return redirect('room_detail', room_id=room.code)
+        except User.DoesNotExist:
+            error = 'No user found with that username.'
+    return render(request, 'record/add_member.html', {'room': room, 'error': error})
+
+@login_required
+def add_group_expense(request, room_id):
+    room = get_object_or_404(SplitRoom, code=room_id)
+    if request.method == 'POST':
+        description = request.POST.get('description')
+        amount = Decimal(request.POST.get('amount'))
+        paid_by = request.user
+        expense = GroupExpense.objects.create(room=room, description=description, amount=amount, paid_by=paid_by)
+
+        members = RoomMembership.objects.filter(room=room)
+        share = amount / members.count()
+        for member in members:
+            GroupExpenseShare.objects.create(expense=expense, user=member.user, share_amount=share)
+
+            if member.user != paid_by:
+                debt, created = GroupDebt.objects.get_or_create(
+                    room=room,
+                    from_user=member.user,
+                    to_user=paid_by,
+                    defaults={'amount': 0}
+                )
+                debt.amount += share
+                debt.save()
+
+        return redirect('room_detail', room_id=room.code)
+    return render(request, 'record/add_group_expense.html', {'room': room})
+
+@login_required
+def settle_up(request, room_id):
+    room = get_object_or_404(SplitRoom, code=room_id)
+    GroupDebt.objects.filter(room=room).delete()
+    messages.success(request, 'All debts in this room have been settled.')
+    return redirect('room_detail', room_id=room.code)

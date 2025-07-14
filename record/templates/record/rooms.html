@@ -1,0 +1,32 @@
+{% extends "record/layout.html" %}
+{% block title %}Your Rooms{% endblock %}
+{% block body %}
+<h2>Your Rooms</h2>
+<a href="{% url 'create_room' %}" class="btn btn-primary mb-3">Create Room</a>
+
+<!-- Join Room Section -->
+<div class="card mb-4" style="max-width: 500px;">
+    <div class="card-body">
+        <h5 class="card-title">Join a Room</h5>
+        <form method="post" class="d-flex align-items-center">
+            {% csrf_token %}
+            <input type="text" name="join_code" class="form-control mr-2" placeholder="Enter Room Code" required style="max-width: 250px;">
+            <button type="submit" class="btn btn-success ml-2">Join</button>
+        </form>
+        {% if join_error %}
+            <div class="alert alert-danger mt-2 mb-0">{{ join_error }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<ul class="list-group">
+    {% for room in rooms %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ room.name }} <span class="badge badge-secondary"></span></span>
+            <a href="{% url 'room_detail' room.code %}" class="btn btn-sm btn-info">Enter</a>
+        </li>
+    {% empty %}
+        <li class="list-group-item">No rooms found.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

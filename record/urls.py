@@ -26,8 +26,13 @@ urlpatterns = [
     path('profile_view/<int:user_id>/', views.profile_view, name='profile_view'),
     path('chat_view/<int:user_id>/', views.chat_view, name='chat_view'),
     path('edit_profile/<int:user_id>/', views.edit_profile, name='edit_profile'),
-    path('group_expense/create/', views.create_group_expense, name='create_group_expense'),
-    path('group_expense/list/', views.group_expense_list, name='group_expense_list'),
-    path('group_balance/<int:group_id>,',views.group_balance,name="group_balance")
+    path('rooms/', views.split_rooms, name='split_rooms'),
+    
+    path('rooms/create/', views.create_room, name='create_room'),
+    path('rooms/<str:room_id>/', views.room_detail, name='room_detail'),
+    path('rooms/<str:room_id>/add-member/', views.add_member, name='add_member'),
+    path('rooms/<str:room_id>/add-expense/', views.add_group_expense, name='add_group_expense'),
+    path('rooms/<str:room_id>/settle/', views.settle_up, name='settle_up'),
+
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

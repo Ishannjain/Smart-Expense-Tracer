@@ -1,7 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from PIL import Image
-
+import uuid
+import random
+import string
 
 class User(AbstractUser):
     pass
@@ -57,23 +59,71 @@ class Profile(models.Model):
     imagurl = models.CharField(max_length=1000, blank=True)
     About = models.CharField(max_length=1000, blank=True)
 
+
+
+class SplitRoom(models.Model):
+    room_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    code = models.CharField(max_length=8, unique=True, blank=True)
+    name = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_rooms')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)  # Edit/Delete after completion
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = self.generate_unique_code()
+        super().save(*args, **kwargs)
+
+    def generate_unique_code(self):
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            if not SplitRoom.objects.filter(code=code).exists():
+                return code
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+class RoomMembership(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    room = models.ForeignKey(SplitRoom, on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'room')
+
+    def __str__(self):
+        return f"{self.user.username} in {self.room.name}"
+
+
 class GroupExpense(models.Model):
-    description = models.CharField(max_length=200)
+    room = models.ForeignKey(SplitRoom, on_delete=models.CASCADE, related_name='group_expenses')
+    description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    paid_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='paid_expenses')
-    participants = models.ManyToManyField(User, related_name='group_expenses')
+    paid_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_paid_expenses')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.description} - {self.amount}"
+        return f"{self.description} - {self.amount} in {self.room.name}"
 
-class Balance(models.Model):
-    owed_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owed_balances')
-    owed_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owing_balances')
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    class Meta:
-        unique_together = ('owed_by', 'owed_to')
+class GroupExpenseShare(models.Model):
+    expense = models.ForeignKey(GroupExpense, on_delete=models.CASCADE, related_name='shares')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    share_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.owed_by} owes {self.owed_to} {self.amount}"
+        return f"{self.user.username} owes {self.share_amount} for {self.expense.description}"
+
+
+class GroupDebt(models.Model):
+    room = models.ForeignKey(SplitRoom, on_delete=models.CASCADE)
+    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_debts_owed')
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_debts_to_collect')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ('room', 'from_user', 'to_user')
+
+    def __str__(self):
+        return f"{self.from_user.username} owes {self.to_user.username}: {self.amount}"

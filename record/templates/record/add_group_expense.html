@@ -1,0 +1,27 @@
+{% extends "record/layout.html" %}
+{% block title %}Add Expense to {{ room.name }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="mb-4">Add Expense to <strong>{{ room.name }}</strong></h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" name="description" placeholder="Expense description" required>
+        </div>
+        <div class="form-group mt-2">
+            <label for="amount">Amount</label>
+            <input type="number" class="form-control" id="amount" name="amount" step="0.01" placeholder="Amount" required>
+        </div>
+        <button type="submit" class="btn btn-success mt-3">
+            <i class="fas fa-plus"></i> Add Expense
+        </button>
+    </form>
+
+    <a href="{% url 'room_detail' room.code %}" class="btn btn-secondary mt-3">
+        <i class="fas fa-arrow-left"></i> Back to Room
+    </a>
+</div>
+{% endblock %}
