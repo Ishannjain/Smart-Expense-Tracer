@@ -1,4 +1,3 @@
-
 # BudgetWise
 
 BudgetWise is a personal finance web application built with Django that allows users to track their income, expenses, and budgets. The application is designed to be user-friendly while providing powerful features such as monthly/annual financial summaries, category-based budget tracking, and dynamic filters for viewing records.
