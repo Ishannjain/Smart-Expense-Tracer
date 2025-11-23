@@ -70,10 +70,6 @@ def index(request):
         'yearly_expense': yearly_expense,
         'now': now
     })
-
-
-
-
 def categories_list(request):
     if request.method=='POST':
         name=request.POST.get('name')
@@ -135,8 +131,6 @@ def login_view(request):
         return render(request, "record/login.html", {
             "next": request.GET.get('next', '')
         })
-    
-    
 def display_expense(request):
     query = request.GET.get('q')
     start_date = request.GET.get('start_date')
@@ -188,7 +182,6 @@ def add_expense(request):
         )
         return redirect('display_expense')
     return render(request, 'record/expense_form.html', {"categories": categories, "expense": None})
-
 def edit_expense(request, expense_id):
     expense = get_object_or_404(Expense, id=expense_id, user=request.user)
     categories = Category.objects.filter(user=request.user)
@@ -239,7 +232,6 @@ def edit_income(request, income_id):
         income.save()
         return redirect('display_income')
     return render(request, 'record/income_form.html', {"income": income})
-
 def delete_income(request,income_id):
     income=get_object_or_404(Income,id=income_id,user=request.user)
     income.delete()
@@ -256,7 +248,7 @@ def register(request):
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if not check(password):
-                    return render(request, "auction/register.html", {
+                    return render(request, "record/register.html", {
                         "message": "Passwords does not meet requirements. Minimun length 8 and should contain atleast one Capital Letter, one small Letter and one digit"
                     })
 

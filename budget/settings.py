@@ -22,12 +22,26 @@ SECRET_KEY = 'django-insecure-_8okz4%h)9yu&@=1175jvc+)u@cddess!uq^eczt5b0*1dg&e0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'gunicorn', 'SmartExpenseTracer.wsgi:application.onrender.com']
-ALLOWED_HOSTS = ['.onrender.com']
-import os
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'gunicorn',
+    '.onrender.com',
+]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+
+# Where collectstatic will collect all static files for deployment
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Additional static files directories (optional)
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Use WhiteNoise for static files storage (gzip + cache busting)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # Application definition
@@ -100,21 +114,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-
-# Where collectstatic will collect all static files for deployment
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# Additional static files directories (optional)
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
-
-# Use WhiteNoise for static files storage (gzip + cache busting)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # Media files (uploads)
