@@ -61,3 +61,5 @@ urllib3==2.2.2
 charset-normalizer==3.3.2
 certifi==2024.8.30
 
+numpy==2.3.5
+
